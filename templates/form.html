@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h1>{{ '编辑树苗' if seedling else '新增树苗' }}</h1>
+    <form method="post">
+        <div class="form-grid">
+            <label class="field">
+                <span>编号 *</span>
+                <input type="text" name="code" required value="{{ seedling['code'] if seedling else '' }}">
+            </label>
+            <label class="field">
+                <span>高度(米) *</span>
+                <input type="number" step="0.01" name="height" required value="{{ seedling['height'] if seedling else '' }}">
+            </label>
+            <label class="field">
+                <span>树冠宽度(米) *</span>
+                <input type="number" step="0.01" name="crown_width" required value="{{ seedling['crown_width'] if seedling else '' }}">
+            </label>
+            <label class="field">
+                <span>价格(元) *</span>
+                <input type="number" step="0.01" name="price" required value="{{ seedling['price'] if seedling else '' }}">
+            </label>
+            <label class="field">
+                <span>照片文件名 (位于 pictures 目录)</span>
+                <input type="text" name="photo" placeholder="例如: 0523.jpg" value="{{ seedling['photo'] if seedling else '' }}">
+            </label>
+            <label class="field" style="justify-content: end;">
+                <span>是否售出</span>
+                <input type="checkbox" name="sold" {% if seedling and seedling['sold'] %}checked{% endif %}>
+            </label>
+        </div>
+
+        <div class="actions" style="margin-top: 14px;">
+            <button type="submit">保存</button>
+            <a class="btn secondary" href="{{ url_for('index') }}">返回列表</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h1>树苗数据库管理与检索</h1>
+
+    <form class="actions" method="get" action="{{ url_for('index') }}">
+        <input type="text" name="keyword" placeholder="按编号搜索" value="{{ keyword }}">
+        <select name="sold">
+            <option value="all" {% if sold_filter == 'all' %}selected{% endif %}>全部状态</option>
+            <option value="0" {% if sold_filter == '0' %}selected{% endif %}>未售出</option>
+            <option value="1" {% if sold_filter == '1' %}selected{% endif %}>已售出</option>
+        </select>
+        <button type="submit">检索</button>
+        <a class="btn secondary" href="{{ url_for('index') }}">重置</a>
+        <a class="btn" href="{{ url_for('add_seedling') }}">新增树苗</a>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>照片</th>
+                <th>编号</th>
+                <th>高度(米)</th>
+                <th>树冠宽度(米)</th>
+                <th>价格(元)</th>
+                <th>是否售出</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in seedlings %}
+            <tr>
+                <td>
+                    {% if item['photo'] %}
+                        <img class="photo" src="{{ url_for('pictures', filename=item['photo']) }}" alt="{{ item['code'] }}">
+                    {% else %}
+                        无图片
+                    {% endif %}
+                </td>
+                <td>{{ item['code'] }}</td>
+                <td>{{ '%.2f'|format(item['height']) }}</td>
+                <td>{{ '%.2f'|format(item['crown_width']) }}</td>
+                <td>{{ '%.2f'|format(item['price']) }}</td>
+                <td class="status {{ 'sold' if item['sold'] else 'unsold' }}">{{ '已售出' if item['sold'] else '未售出' }}</td>
+                <td>
+                    <div class="row">
+                        <a class="btn secondary" href="{{ url_for('edit_seedling', seedling_id=item['id']) }}">编辑</a>
+                        <form method="post" action="{{ url_for('delete_seedling', seedling_id=item['id']) }}" onsubmit="return confirm('确定删除该记录吗？')">
+                            <button class="danger" type="submit">删除</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7">没有符合条件的树苗数据。</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
