@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width: 420px; margin: 28px auto;">
+    <h1>登录</h1>
+    <form method="post">
+        <div class="field" style="margin-bottom: 10px;">
+            <span>用户名</span>
+            <input type="text" name="username" required placeholder="admin / employee">
+        </div>
+        <div class="field" style="margin-bottom: 10px;">
+            <span>密码</span>
+            <input type="password" name="password" required placeholder="admin123 / emp123">
+        </div>
+        <button type="submit">登录</button>
+    </form>
+</div>
+{% endblock %}

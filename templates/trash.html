@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h1>回收站</h1>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>高度</th>
+                    <th>冠幅</th>
+                    <th>价格</th>
+                    <th>删除时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in rows %}
+                <tr>
+                    <td>{{ item['code'] }}</td>
+                    <td>{{ item['height'] }}</td>
+                    <td>{{ item['crown_width'] }}</td>
+                    <td>{{ item['price'] }}</td>
+                    <td>{{ item['deleted_at'] or '-' }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('restore_seedling', seedling_id=item['id']) }}">
+                            <button class="btn success" type="submit">恢复</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">回收站为空。</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

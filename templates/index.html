@@ -3,60 +3,122 @@
 <div class="card">
     <h1>树苗数据库管理与检索</h1>
 
-    <form class="actions" method="get" action="{{ url_for('index') }}">
-        <input type="text" name="keyword" placeholder="按编号搜索" value="{{ keyword }}">
-        <select name="sold">
-            <option value="all" {% if sold_filter == 'all' %}selected{% endif %}>全部状态</option>
-            <option value="0" {% if sold_filter == '0' %}selected{% endif %}>未售出</option>
-            <option value="1" {% if sold_filter == '1' %}selected{% endif %}>已售出</option>
-        </select>
-        <button type="submit">检索</button>
-        <a class="btn secondary" href="{{ url_for('index') }}">重置</a>
-        <a class="btn" href="{{ url_for('add_seedling') }}">新增树苗</a>
+    <div class="grid" style="margin-bottom: 12px;">
+        <div class="stat">
+            <div class="label">总库存</div>
+            <div class="value">{{ stats['total'] }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">未售数量</div>
+            <div class="value">{{ stats['unsold'] }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">已售金额</div>
+            <div class="value">{{ '%.2f'|format(stats['sold_amount']) }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">均价</div>
+            <div class="value">{{ '%.2f'|format(stats['avg_price']) }}</div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <span>规格分布：</span>
+        <span class="btn secondary">小规格 {{ stats['size_distribution']['小规格'] }}</span>
+        <span class="btn secondary">中规格 {{ stats['size_distribution']['中规格'] }}</span>
+        <span class="btn secondary">大规格 {{ stats['size_distribution']['大规格'] }}</span>
+    </div>
+
+    <form method="get" action="{{ url_for('index') }}">
+        <div class="form-grid">
+            <label class="field"><span>编号</span><input type="text" name="keyword" placeholder="按编号搜索" value="{{ filters['keyword'] }}"></label>
+            <label class="field">
+                <span>售出状态</span>
+                <select name="sold">
+                    <option value="all" {% if filters['sold'] == 'all' %}selected{% endif %}>全部</option>
+                    <option value="0" {% if filters['sold'] == '0' %}selected{% endif %}>未售出</option>
+                    <option value="1" {% if filters['sold'] == '1' %}selected{% endif %}>已售出</option>
+                </select>
+            </label>
+            <label class="field"><span>最低价格</span><input type="number" step="0.01" name="min_price" value="{{ filters['min_price'] }}"></label>
+            <label class="field"><span>最高价格</span><input type="number" step="0.01" name="max_price" value="{{ filters['max_price'] }}"></label>
+            <label class="field"><span>最低高度(米)</span><input type="number" step="0.01" name="min_height" value="{{ filters['min_height'] }}"></label>
+            <label class="field"><span>最高高度(米)</span><input type="number" step="0.01" name="max_height" value="{{ filters['max_height'] }}"></label>
+            <label class="field"><span>最低冠幅(米)</span><input type="number" step="0.01" name="min_crown" value="{{ filters['min_crown'] }}"></label>
+            <label class="field"><span>最高冠幅(米)</span><input type="number" step="0.01" name="max_crown" value="{{ filters['max_crown'] }}"></label>
+        </div>
+        <div class="actions" style="margin-top: 12px;">
+            <button type="submit">高级检索</button>
+            <a class="btn secondary" href="{{ url_for('index') }}">重置</a>
+            <a class="btn success" href="{{ url_for('export_excel', **request.args) }}">导出Excel</a>
+            <a class="btn warn" href="{{ url_for('export_pdf', **request.args) }}">导出PDF</a>
+            {% if current_user['role'] == 'admin' %}
+                <a class="btn" href="{{ url_for('add_seedling') }}">新增树苗</a>
+            {% endif %}
+        </div>
     </form>
 
-    <table>
-        <thead>
-            <tr>
-                <th>照片</th>
-                <th>编号</th>
-                <th>高度(米)</th>
-                <th>树冠宽度(米)</th>
-                <th>价格(元)</th>
-                <th>是否售出</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in seedlings %}
-            <tr>
-                <td>
-                    {% if item['photo'] %}
-                        <img class="photo" src="{{ url_for('pictures', filename=item['photo']) }}" alt="{{ item['code'] }}">
-                    {% else %}
-                        无图片
+    {% if current_user['role'] == 'admin' %}
+    <form class="actions" method="post" action="{{ url_for('import_seedlings') }}" enctype="multipart/form-data">
+        <input type="file" name="import_file" accept=".csv,.xlsx,.xls" required>
+        <button type="submit">批量导入 Excel/CSV</button>
+    </form>
+    {% endif %}
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>照片</th>
+                    <th>编号</th>
+                    <th>高度(米)</th>
+                    <th>树冠宽度(米)</th>
+                    <th>价格(元)</th>
+                    <th>状态</th>
+                    <th>售出日期</th>
+                    <th>客户</th>
+                    <th>联系方式</th>
+                    <th>备注</th>
+                    {% if current_user['role'] == 'admin' %}<th>操作</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in seedlings %}
+                <tr>
+                    <td>
+                        {% if item['photo'] %}
+                            <img class="photo" src="{{ url_for('pictures', filename=item['photo']) }}" alt="{{ item['code'] }}">
+                        {% else %}
+                            无图片
+                        {% endif %}
+                    </td>
+                    <td>{{ item['code'] }}</td>
+                    <td>{{ '%.2f'|format(item['height']) }}</td>
+                    <td>{{ '%.2f'|format(item['crown_width']) }}</td>
+                    <td>{{ '%.2f'|format(item['price']) }}</td>
+                    <td class="status {{ 'sold' if item['sold'] else 'unsold' }}">{{ '已售出' if item['sold'] else '未售出' }}</td>
+                    <td>{{ item['sold_date'] or '-' }}</td>
+                    <td>{{ item['customer_name'] or '-' }}</td>
+                    <td>{{ item['customer_contact'] or '-' }}</td>
+                    <td>{{ item['notes'] or '-' }}</td>
+                    {% if current_user['role'] == 'admin' %}
+                    <td>
+                        <div class="row">
+                            <a class="btn secondary" href="{{ url_for('edit_seedling', seedling_id=item['id']) }}">编辑</a>
+                            <form method="post" action="{{ url_for('delete_seedling', seedling_id=item['id']) }}" onsubmit="return confirm('确定删除该记录吗？')">
+                                <button class="danger" type="submit">删除</button>
+                            </form>
+                        </div>
+                    </td>
                     {% endif %}
-                </td>
-                <td>{{ item['code'] }}</td>
-                <td>{{ '%.2f'|format(item['height']) }}</td>
-                <td>{{ '%.2f'|format(item['crown_width']) }}</td>
-                <td>{{ '%.2f'|format(item['price']) }}</td>
-                <td class="status {{ 'sold' if item['sold'] else 'unsold' }}">{{ '已售出' if item['sold'] else '未售出' }}</td>
-                <td>
-                    <div class="row">
-                        <a class="btn secondary" href="{{ url_for('edit_seedling', seedling_id=item['id']) }}">编辑</a>
-                        <form method="post" action="{{ url_for('delete_seedling', seedling_id=item['id']) }}" onsubmit="return confirm('确定删除该记录吗？')">
-                            <button class="danger" type="submit">删除</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="7">没有符合条件的树苗数据。</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="11">没有符合条件的树苗数据。</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
