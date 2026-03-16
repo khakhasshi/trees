@@ -65,5 +65,10 @@ sudo bash deploy_ubuntu.sh
 ```
 部署后服务名：`trees-app`
 
+如需**重建数据库**（会先自动备份旧库到 `db_backups/`）：
+```bash
+REBUILD_DB=1 sudo bash deploy_ubuntu.sh
+```
+
 - 状态：`systemctl status trees-app`
 - 日志：`journalctl -u trees-app -f`

@@ -5,6 +5,9 @@ APP_NAME="trees-app"
 APP_PORT="7006"
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVICE_FILE="/etc/systemd/system/${APP_NAME}.service"
+REBUILD_DB="${REBUILD_DB:-0}"
+DB_PATH="${APP_DIR}/trees.db"
+BACKUP_DIR="${APP_DIR}/db_backups"
 
 if [[ "${EUID}" -ne 0 ]]; then
   echo "请用 sudo 运行：sudo bash deploy_ubuntu.sh"
@@ -46,6 +49,22 @@ systemctl daemon-reload
 systemctl enable "${APP_NAME}"
 systemctl restart "${APP_NAME}"
 
+if [[ "${REBUILD_DB}" == "1" ]]; then
+  echo "[额外步骤] 检测到 REBUILD_DB=1，执行数据库重建..."
+  systemctl stop "${APP_NAME}"
+  mkdir -p "${BACKUP_DIR}"
+  if [[ -f "${DB_PATH}" ]]; then
+    BACKUP_FILE="${BACKUP_DIR}/trees_$(date +%Y%m%d_%H%M%S).db"
+    cp "${DB_PATH}" "${BACKUP_FILE}"
+    echo "已备份旧数据库到: ${BACKUP_FILE}"
+    rm -f "${DB_PATH}"
+  fi
+  cd "${APP_DIR}"
+  "${APP_DIR}/.venv/bin/python" -c "from app import init_db; init_db()"
+  systemctl start "${APP_NAME}"
+  echo "数据库已重建并重启服务。"
+fi
+
 if command -v ufw >/dev/null 2>&1; then
   echo "[6/6] 放行防火墙端口 ${APP_PORT}..."
   ufw allow "${APP_PORT}" || true
@@ -61,3 +80,4 @@ echo "查看状态: systemctl status ${APP_NAME}"
 echo "查看日志: journalctl -u ${APP_NAME} -f"
 echo "本机访问: http://127.0.0.1:${APP_PORT}"
 echo "局域网访问: http://${LAN_IP}:${APP_PORT}"
+echo "如需重建数据库并自动备份旧库: REBUILD_DB=1 sudo bash deploy_ubuntu.sh"
