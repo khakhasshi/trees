@@ -666,6 +666,45 @@ def import_seedlings():
     return redirect(url_for("index"))
 
 
+@app.route("/import/template")
+@admin_required
+def download_import_template():
+    columns = [
+        "code",
+        "height",
+        "crown_width",
+        "price",
+        "sold",
+        "photo",
+        "sold_date",
+        "customer_name",
+        "customer_contact",
+        "notes",
+    ]
+    sample = {
+        "code": "0601",
+        "height": 1.5,
+        "crown_width": 2.0,
+        "price": 4200,
+        "sold": 0,
+        "photo": "0601.jpg",
+        "sold_date": "",
+        "customer_name": "",
+        "customer_contact": "",
+        "notes": "",
+    }
+    output = io.BytesIO()
+    pd.DataFrame([sample], columns=columns).to_excel(output, index=False)
+    output.seek(0)
+    log_action("download_template", "seedling", "template", "下载导入模板")
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="seedlings_import_template.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
 @app.route("/export/excel")
 @login_required
 def export_excel():

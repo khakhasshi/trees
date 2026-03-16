@@ -40,6 +40,7 @@
 支持中英文字段名（示例）：
 - 必填：`code/编号`、`height/高度`、`crown_width/树冠宽度/冠幅`、`price/价格`
 - 可选：`sold/是否售出`、`photo/照片`、`sold_date/售出日期`、`customer_name/客户`、`customer_contact/联系方式`、`notes/备注`
+- 管理员可在首页点击“下载导入模板”获取标准 Excel 模板（`seedlings_import_template.xlsx`）
 
 ## 局域网访问
 - 已默认监听所有网卡（`0.0.0.0:7006`）。

@@ -62,6 +62,7 @@
     <form class="actions" method="post" action="{{ url_for('import_seedlings') }}" enctype="multipart/form-data">
         <input type="file" name="import_file" accept=".csv,.xlsx,.xls" required>
         <button type="submit">批量导入 Excel/CSV</button>
+        <a class="btn secondary" href="{{ url_for('download_import_template') }}">下载导入模板</a>
     </form>
     {% endif %}
 
