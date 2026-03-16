@@ -27,11 +27,12 @@
         .btn.success { background: #16a34a; }
         .btn.warn { background: #d97706; }
         .danger { background: #e03131; }
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; min-width: 980px; }
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; min-width: 900px; }
         th, td { border-bottom: 1px solid #eceff4; padding: 10px; text-align: left; vertical-align: middle; }
         th { background: #fafafa; }
-        .photo { width: 84px; height: 84px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+        .photo { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+        .photo-link { display: inline-flex; flex-direction: column; gap: 4px; color: #666; font-size: 12px; text-decoration: none; }
         .status { font-weight: 600; }
         .sold { color: #999; }
         .unsold { color: #1f8b4c; }
@@ -47,7 +48,11 @@
             h2 { font-size: 16px; }
             .grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
             .form-grid { grid-template-columns: 1fr; }
-            button, .btn { width: 100%; text-align: center; }
+            th, td { padding: 8px; }
+            .photo { width: 140px; height: 140px; }
+            .actions > button,
+            .actions > .btn { flex: 1 1 calc(50% - 8px); text-align: center; }
+            .actions input[type="file"] { width: 100%; }
         }
     </style>
 </head>

@@ -88,7 +88,10 @@
                 <tr>
                     <td>
                         {% if item['photo'] %}
-                            <img class="photo" src="{{ url_for('pictures', filename=item['photo']) }}" alt="{{ item['code'] }}">
+                            <a class="photo-link" href="{{ url_for('pictures', filename=item['photo']) }}" target="_blank" rel="noopener noreferrer">
+                                <img class="photo" src="{{ url_for('pictures', filename=item['photo']) }}" alt="{{ item['code'] }}" loading="lazy">
+                                <span>点击看大图</span>
+                            </a>
                         {% else %}
                             无图片
                         {% endif %}
