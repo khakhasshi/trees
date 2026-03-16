@@ -31,6 +31,7 @@ PICTURES_DIR = BASE_DIR / "pictures"
 
 app = Flask(__name__)
 app.secret_key = "tree-seedling-demo-secret"
+app.config["DB_BOOTSTRAPPED"] = False
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 
@@ -345,6 +346,39 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+
+def ensure_db_ready():
+    if app.config.get("DB_BOOTSTRAPPED"):
+        return
+
+    conn = get_db_connection()
+    existing_tables = {
+        row["name"]
+        for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()
+    }
+    conn.close()
+
+    required_tables = {"seedlings", "users", "operation_logs"}
+    if not required_tables.issubset(existing_tables):
+        init_db()
+
+    app.config["DB_BOOTSTRAPPED"] = True
+
+
+def initialize_on_startup():
+    PICTURES_DIR.mkdir(parents=True, exist_ok=True)
+    init_db()
+
+
+initialize_on_startup()
+
+
+@app.before_request
+def bootstrap_database_once_per_worker():
+    ensure_db_ready()
 
 
 @app.route("/pictures/<path:filename>")

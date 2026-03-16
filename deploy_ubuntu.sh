@@ -44,7 +44,11 @@ RestartSec=3
 WantedBy=multi-user.target
 EOF
 
-echo "[5/6] 启动并设置开机自启..."
+echo "[5/6] 执行数据库初始化/迁移..."
+cd "${APP_DIR}"
+"${APP_DIR}/.venv/bin/python" -c "from app import init_db; init_db()"
+
+echo "[6/6] 启动并设置开机自启..."
 systemctl daemon-reload
 systemctl enable "${APP_NAME}"
 systemctl restart "${APP_NAME}"
@@ -66,10 +70,10 @@ if [[ "${REBUILD_DB}" == "1" ]]; then
 fi
 
 if command -v ufw >/dev/null 2>&1; then
-  echo "[6/6] 放行防火墙端口 ${APP_PORT}..."
+  echo "[附加步骤] 放行防火墙端口 ${APP_PORT}..."
   ufw allow "${APP_PORT}" || true
 else
-  echo "[6/6] 未检测到 ufw，跳过防火墙放行。"
+  echo "[附加步骤] 未检测到 ufw，跳过防火墙放行。"
 fi
 
 LAN_IP="$(hostname -I | awk '{print $1}')"
